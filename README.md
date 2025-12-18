@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon-256x256.png" alt="Whitelist XML-RPC" width="128" height="128">
+  <img src="assets/banner-772x250.png" alt="Whitelist XML-RPC">
 </p>
 
 # Whitelist XML-RPC
