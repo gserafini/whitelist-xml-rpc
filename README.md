@@ -21,6 +21,41 @@ Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all oth
 - **Configurable Source** - Change the IP source URL if needed
 - **Clean Uninstall** - Removes all .htaccess rules and database options
 
+## Why Disable XML-RPC?
+
+XML-RPC (`xmlrpc.php`) is a legacy WordPress feature that has largely been replaced by the REST API since WordPress 4.4 (2015). However, it remains enabled by default and presents significant security risks:
+
+### Security Risks
+
+- **Brute Force Amplification** - Unlike the login page, XML-RPC can test hundreds of username/password combinations in a single request, bypassing rate limiting and security plugins
+- **DDoS via Pingback** - Attackers exploit the pingback mechanism to flood sites with requests, overwhelming servers. In 2013, over 2,500 WordPress sites were herded into a botnet this way
+- **Attack Proxy** - Your site can be weaponized to attack other sites without your knowledge, using the pingback feature to send malicious requests
+
+### Why Whitelist Instead of Fully Disable?
+
+Many plugins recommend fully disabling XML-RPC, but this breaks **Jetpack** functionality. This plugin takes a smarter approach: block everyone *except* Jetpack's servers, giving you security without sacrificing Jetpack features.
+
+## What Will Stop Working
+
+When this plugin is active, the following features will be blocked for non-whitelisted IPs:
+
+| Feature | Impact | Alternative |
+|---------|--------|-------------|
+| **WordPress Mobile App** | Won't connect via XML-RPC | Use the REST API (default since WP 4.4) or whitelist your IP |
+| **Trackbacks** | Won't receive trackback notifications | Minimal impact - rarely used today |
+| **Pingbacks** | Won't receive pingback notifications | Minimal impact - often disabled anyway due to spam |
+| **Remote Publishing** | Desktop apps like Windows Live Writer won't work | Use the WordPress admin or whitelist your IP |
+| **Older Third-Party Tools** | Some legacy integrations may fail | Most modern tools use REST API instead |
+
+### What Still Works
+
+- ✅ **Jetpack** - All features work (IPs are whitelisted)
+- ✅ **REST API** - Completely separate from XML-RPC
+- ✅ **WordPress Admin** - Full dashboard access
+- ✅ **All Modern Plugins** - REST API-based integrations
+- ✅ **Block Editor (Gutenberg)** - Uses REST API
+- ✅ **WooCommerce** - Uses REST API
+
 ## How It Works
 
 1. Fetches IP list from `https://jetpack.com/ips-v4.txt` (configurable)
@@ -83,6 +118,10 @@ The settings page shows:
 ### Will this break my Jetpack connection?
 
 No. The plugin specifically whitelists Jetpack server IPs so Jetpack can continue to communicate with your site.
+
+### Will the WordPress mobile app still work?
+
+It depends. Modern versions of the WordPress app (since 2015) use the REST API by default, which is unaffected by this plugin. If you're having issues, add your phone's IP address to the custom IPs whitelist, or use the Jetpack app instead.
 
 ### Can I add my own IPs to the whitelist?
 

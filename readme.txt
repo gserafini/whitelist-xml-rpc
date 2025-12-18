@@ -14,6 +14,33 @@ Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all oth
 
 Whitelist XML-RPC protects your WordPress site by restricting xmlrpc.php access to only authorized IP addresses (Jetpack servers by default).
 
+**Why Disable XML-RPC?**
+
+XML-RPC (xmlrpc.php) is a legacy WordPress feature largely replaced by the REST API since WordPress 4.4 (2015). It remains enabled by default but presents significant security risks:
+
+* **Brute Force Amplification** - XML-RPC can test hundreds of passwords in a single request, bypassing rate limiting
+* **DDoS via Pingback** - Attackers exploit pingbacks to flood sites with requests
+* **Attack Proxy** - Your site can be weaponized to attack others via the pingback feature
+
+This plugin takes a smarter approach than fully disabling XML-RPC: block everyone *except* Jetpack's servers, giving you security without sacrificing Jetpack features.
+
+**What Will Stop Working:**
+
+* WordPress mobile app (XML-RPC mode) - Use REST API mode or whitelist your IP
+* Trackbacks from other sites - Rarely used today
+* Pingbacks from other sites - Often disabled anyway due to spam
+* Remote publishing via desktop apps - Use admin dashboard instead
+* Some legacy third-party integrations - Most modern tools use REST API
+
+**What Still Works:**
+
+* Jetpack - All features (IPs are whitelisted)
+* REST API - Completely separate from XML-RPC
+* WordPress Admin - Full dashboard access
+* Block Editor (Gutenberg) - Uses REST API
+* WooCommerce - Uses REST API
+* All modern plugins - REST API-based integrations
+
 **Features:**
 
 * Automatically fetches current Jetpack server IPs daily
@@ -58,6 +85,10 @@ After activation, go to the settings page and copy the generated nginx configura
 = Will this break my Jetpack connection? =
 
 No. The plugin specifically whitelists Jetpack server IPs so Jetpack can continue to communicate with your site.
+
+= Will the WordPress mobile app still work? =
+
+It depends. Modern versions of the WordPress app (since 2015) use the REST API by default, which is unaffected. If you're having issues, add your phone's IP to the custom whitelist, or use the Jetpack app.
 
 = Can I add my own IPs to the whitelist? =
 
