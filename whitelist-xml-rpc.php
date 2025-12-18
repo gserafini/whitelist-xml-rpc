@@ -3,7 +3,7 @@
  * Plugin Name: Whitelist XML-RPC
  * Plugin URI: https://github.com/gserafini/whitelist-xml-rpc
  * Description: Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other xmlrpc.php requests with 403 Forbidden. Syncs daily via WordPress cron.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Gabriel Serafini
  * Author URI: https://serafinistudios.com
  * License: GPL v2 or later
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class XMLRPC_IP_Whitelist {
 
-    const VERSION = '1.0.1';
+    const VERSION = '1.1.0';
     const OPTION_PREFIX = 'xmlrpc_whitelist_';
     const CRON_HOOK = 'xmlrpc_whitelist_sync';
     const HTACCESS_MARKER = 'Whitelist XML-RPC';
@@ -415,6 +415,60 @@ class XMLRPC_IP_Whitelist {
     }
 
     /**
+     * Detect if server is running nginx
+     */
+    public static function is_nginx() {
+        // Check SERVER_SOFTWARE
+        if ( isset( $_SERVER['SERVER_SOFTWARE'] ) && stripos( $_SERVER['SERVER_SOFTWARE'], 'nginx' ) !== false ) {
+            return true;
+        }
+
+        // Check for nginx-specific server variables
+        if ( isset( $_SERVER['NGINX_VERSION'] ) ) {
+            return true;
+        }
+
+        // Check if .htaccess doesn't exist (common on nginx)
+        $htaccess_file = self::get_htaccess_path();
+        if ( $htaccess_file && ! file_exists( $htaccess_file ) ) {
+            // Could be nginx, but also could be fresh Apache install
+            // Only return true if we have other indicators
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Generate nginx configuration rules
+     */
+    public static function generate_nginx_rules( $ips ) {
+        if ( empty( $ips ) ) {
+            return '';
+        }
+
+        $source_url = get_option( self::OPTION_PREFIX . 'ip_source', self::DEFAULT_IP_SOURCE );
+        $output = "# Whitelist XML-RPC for nginx\n";
+        $output .= "# Source: {$source_url}\n";
+        $output .= "# Last updated: " . current_time( 'Y-m-d H:i:s' ) . "\n";
+        $output .= "# Add this to your server block in nginx.conf\n\n";
+        $output .= "location = /xmlrpc.php {\n";
+
+        foreach ( $ips as $ip ) {
+            $output .= "    allow {$ip};\n";
+        }
+
+        $output .= "    deny all;\n\n";
+        $output .= "    # Pass to PHP-FPM if allowed (adjust socket path as needed)\n";
+        $output .= "    include fastcgi_params;\n";
+        $output .= "    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;\n";
+        $output .= "    fastcgi_pass unix:/var/run/php-fpm.sock;\n";
+        $output .= "}\n";
+
+        return $output;
+    }
+
+    /**
      * Verify that .htaccess actually contains our rules
      * Only call this on admin page load, not on every request
      */
@@ -480,12 +534,19 @@ class XMLRPC_IP_Whitelist {
             return false;
         }
 
-        $result = self::update_htaccess( $ips );
+        // Cache IPs for display (always do this, even on nginx)
+        set_transient( self::CACHE_KEY, $ips, self::CACHE_EXPIRY );
+        update_option( self::OPTION_PREFIX . 'last_sync', current_time( 'timestamp' ) );
+        update_option( self::OPTION_PREFIX . 'last_ip_count', count( $ips ) );
 
-        // Cache IPs for display (avoids remote fetch on settings page)
-        if ( $result ) {
-            set_transient( self::CACHE_KEY, $ips, self::CACHE_EXPIRY );
+        // On nginx, skip .htaccess update but mark as success (manual config required)
+        if ( self::is_nginx() ) {
+            self::log( 'nginx detected - skipping .htaccess update. Use nginx config from admin panel.' );
+            update_option( self::OPTION_PREFIX . 'last_status', 'nginx' );
+            return true;
         }
+
+        $result = self::update_htaccess( $ips );
 
         return $result;
     }
@@ -579,8 +640,11 @@ class XMLRPC_IP_Whitelist {
         $current_ips = self::get_cached_ips_for_display();
         $cache_status = get_transient( self::CACHE_KEY ) !== false ? 'cached' : 'not_cached';
 
-        // Verify .htaccess rules exist (only on admin page load)
-        $htaccess_verified = self::verify_htaccess_rules();
+        // Detect server type
+        $is_nginx = self::is_nginx();
+
+        // Verify .htaccess rules exist (only on admin page load, Apache only)
+        $htaccess_verified = $is_nginx ? false : self::verify_htaccess_rules();
 
         ?>
         <div class="wrap">
@@ -590,10 +654,24 @@ class XMLRPC_IP_Whitelist {
                 <h2 style="margin-top: 0;"><?php _e( 'Status', 'whitelist-xml-rpc' ); ?></h2>
                 <table class="form-table">
                     <tr>
+                        <th><?php _e( 'Server Type', 'whitelist-xml-rpc' ); ?></th>
+                        <td>
+                            <?php if ( $is_nginx ) : ?>
+                                <span style="color: #2271b1; font-weight: bold;">nginx</span>
+                                <span style="color: #666;"> - <?php _e( 'Manual configuration required', 'whitelist-xml-rpc' ); ?></span>
+                            <?php else : ?>
+                                <span style="color: green;">Apache</span>
+                                <span style="color: #666;"> - <?php _e( 'Automatic .htaccess management', 'whitelist-xml-rpc' ); ?></span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
                         <th><?php _e( 'Protection Status', 'whitelist-xml-rpc' ); ?></th>
                         <td>
                             <?php if ( $enabled !== '1' ) : ?>
                                 <span style="color: gray;">&#10007; <?php _e( 'Disabled', 'whitelist-xml-rpc' ); ?></span>
+                            <?php elseif ( $is_nginx ) : ?>
+                                <span style="color: #2271b1; font-weight: bold;">&#9888; <?php _e( 'Manual Config Required - copy nginx rules below', 'whitelist-xml-rpc' ); ?></span>
                             <?php elseif ( $htaccess_verified ) : ?>
                                 <span style="color: green; font-weight: bold;">&#10003; <?php _e( 'Active', 'whitelist-xml-rpc' ); ?></span>
                             <?php else : ?>
@@ -630,6 +708,7 @@ class XMLRPC_IP_Whitelist {
                             ?>
                         </td>
                     </tr>
+                    <?php if ( ! $is_nginx ) : ?>
                     <tr>
                         <th><?php _e( '.htaccess Status', 'whitelist-xml-rpc' ); ?></th>
                         <td>
@@ -640,6 +719,7 @@ class XMLRPC_IP_Whitelist {
                             <?php endif; ?>
                         </td>
                     </tr>
+                    <?php endif; ?>
                 </table>
 
                 <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 10px;">
@@ -712,6 +792,32 @@ class XMLRPC_IP_Whitelist {
                 ?></pre>
             </div>
 
+            <?php if ( $is_nginx ) : ?>
+            <?php
+            $nginx_rules = self::generate_nginx_rules( $current_ips );
+            if ( ! empty( $nginx_rules ) ) :
+            ?>
+            <div class="card" style="max-width: 800px; margin-top: 20px; border-left: 4px solid #2271b1;">
+                <h2 style="margin-top: 0;">
+                    <?php _e( 'nginx Configuration', 'whitelist-xml-rpc' ); ?>
+                    <span style="color: #d63638; font-size: 14px; font-weight: normal;"><?php _e( '(Required - add to your nginx config)', 'whitelist-xml-rpc' ); ?></span>
+                </h2>
+                <p class="description">
+                    <?php _e( 'Since you\'re running nginx, you need to manually add these rules to your server configuration:', 'whitelist-xml-rpc' ); ?>
+                </p>
+                <textarea readonly style="width: 100%; height: 300px; font-family: monospace; font-size: 12px; background: #f0f0f0;" onclick="this.select();"><?php echo esc_textarea( $nginx_rules ); ?></textarea>
+                <p class="description" style="margin-top: 10px;">
+                    <strong><?php _e( 'Instructions:', 'whitelist-xml-rpc' ); ?></strong><br>
+                    1. <?php _e( 'SSH into your server', 'whitelist-xml-rpc' ); ?><br>
+                    2. <?php _e( 'Open your nginx site configuration (e.g., /etc/nginx/sites-available/yoursite)', 'whitelist-xml-rpc' ); ?><br>
+                    3. <?php _e( 'Add this location block inside your server {} block', 'whitelist-xml-rpc' ); ?><br>
+                    4. <?php _e( 'Adjust the fastcgi_pass path to match your PHP-FPM socket', 'whitelist-xml-rpc' ); ?><br>
+                    5. <?php _e( 'Test config: nginx -t', 'whitelist-xml-rpc' ); ?><br>
+                    6. <?php _e( 'Reload nginx: systemctl reload nginx', 'whitelist-xml-rpc' ); ?>
+                </p>
+            </div>
+            <?php endif; ?>
+            <?php else : ?>
             <?php
             $manual_rules = self::get_manual_htaccess_rules();
             if ( ! empty( $manual_rules ) ) :
@@ -735,6 +841,7 @@ class XMLRPC_IP_Whitelist {
                     4. <?php _e( 'Save the file', 'whitelist-xml-rpc' ); ?>
                 </p>
             </div>
+            <?php endif; ?>
             <?php endif; ?>
 
         </div>

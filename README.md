@@ -7,14 +7,15 @@
 ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue?logo=wordpress)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php)
 ![License](https://img.shields.io/badge/License-GPLv2-green)
-![Version](https://img.shields.io/badge/Version-1.0.0-orange)
+![Version](https://img.shields.io/badge/Version-1.1.0-orange)
 
 Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other `xmlrpc.php` requests with 403 Forbidden.
 
 ## Features
 
 - **Automatic IP Sync** - Fetches current Jetpack server IPs daily via WordPress cron
-- **Native WordPress Integration** - Uses `insert_with_markers()` for safe .htaccess editing
+- **Apache + nginx Support** - Auto-detects server type and provides appropriate configuration
+- **Native WordPress Integration** - Uses `insert_with_markers()` for safe .htaccess editing (Apache)
 - **Admin Dashboard** - View status, logs, whitelisted IPs, and trigger manual syncs
 - **Custom IPs** - Add your own IPs or CIDR ranges to the whitelist
 - **Configurable Source** - Change the IP source URL if needed
@@ -34,11 +35,17 @@ Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all oth
 |-------------|---------|
 | WordPress | 5.0+ |
 | PHP | 7.4+ |
-| Apache | 2.4+ (uses `Require ip` directive) |
-| mod_rewrite | Enabled |
-| .htaccess | Writable |
+| Web Server | Apache 2.4+ or nginx |
 
-> **Note:** This plugin does not support nginx. For nginx servers, you'll need to configure your `nginx.conf` directly.
+### Apache
+
+- `mod_rewrite` enabled
+- Writable `.htaccess` file (or use manual copy/paste)
+
+### nginx
+
+- Plugin auto-detects nginx and provides copy/paste configuration
+- Manual addition to your `nginx.conf` server block required
 
 ## Installation
 
@@ -64,10 +71,11 @@ The plugin automatically syncs IPs on activation.
 
 The settings page shows:
 
-- **Protection Status** - Real-time verification that .htaccess rules are in place
+- **Server Type** - Auto-detected (Apache or nginx)
+- **Protection Status** - Real-time verification of rules (Apache) or config reminder (nginx)
 - **Last Sync** - When IPs were last updated
 - **Whitelisted IPs** - Current count of whitelisted addresses
-- **.htaccess Status** - Whether the file is writable
+- **Configuration** - Auto-generated Apache .htaccess or nginx location block
 - **Activity Log** - Recent sync activity and any errors
 
 ## FAQ
@@ -90,9 +98,15 @@ The plugin displays manual copy/paste instructions with the exact rules to add t
 
 ### Does this work with nginx?
 
-No. This plugin uses Apache `.htaccess` rules. For nginx, you would need to configure your `nginx.conf` directly with similar IP allow/deny rules.
+Yes! The plugin auto-detects nginx and generates a ready-to-use `location` block with all the IP allow/deny rules. Just copy the configuration from the admin panel and add it to your nginx server block, then reload nginx.
 
 ## Changelog
+
+### 1.1.0
+
+- Added nginx support with auto-detection and config generation
+- Server type now displayed in admin panel
+- nginx users get copy/paste location block configuration
 
 ### 1.0.0
 

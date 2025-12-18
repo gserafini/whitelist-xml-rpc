@@ -1,14 +1,14 @@
 === Whitelist XML-RPC ===
 Contributors: gserafini
-Tags: security, xmlrpc, jetpack, whitelist, firewall
+Tags: security, xmlrpc, jetpack, whitelist, firewall, nginx
 Requires at least: 5.0
 Tested up to: 6.4
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other xmlrpc.php requests.
+Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other xmlrpc.php requests. Supports both Apache and nginx.
 
 == Description ==
 
@@ -17,8 +17,10 @@ Whitelist XML-RPC protects your WordPress site by restricting xmlrpc.php access 
 **Features:**
 
 * Automatically fetches current Jetpack server IPs daily
+* Supports both Apache and nginx (auto-detected)
 * Uses WordPress cron for scheduled updates
-* Uses WordPress's native .htaccess editing (insert_with_markers)
+* Uses WordPress's native .htaccess editing for Apache (insert_with_markers)
+* Generates ready-to-use nginx configuration blocks
 * Admin dashboard with status, logs, and manual sync
 * Support for custom additional IPs
 * Configurable IP source URL
@@ -28,22 +30,28 @@ Whitelist XML-RPC protects your WordPress site by restricting xmlrpc.php access 
 
 1. Fetches IP list from https://jetpack.com/ips-v4.txt (configurable)
 2. Validates each IP address format
-3. Updates .htaccess with Apache Require ip directives
-4. Blocks all non-whitelisted xmlrpc.php requests with 403 Forbidden
-5. Syncs automatically once per day via WordPress cron
+3. Auto-detects your web server (Apache or nginx)
+4. Apache: Updates .htaccess with Require ip directives
+5. nginx: Generates location block for manual configuration
+6. Blocks all non-whitelisted xmlrpc.php requests with 403 Forbidden
+7. Syncs automatically once per day via WordPress cron
 
 **Requirements:**
 
-* Apache web server with mod_rewrite enabled
-* Apache 2.4+ (uses Require ip directive)
-* Writable .htaccess file
+* Apache 2.4+ with mod_rewrite enabled, OR
+* nginx (plugin provides copy/paste configuration)
+* WordPress 5.0+
+* PHP 7.4+
 
 == Installation ==
 
 1. Upload the `whitelist-xml-rpc` folder to `/wp-content/plugins/`
 2. Activate the plugin through the 'Plugins' menu
-3. Go to Settings > XML-RPC Whitelist to configure
+3. Go to Settings > Whitelist XML-RPC to configure
 4. The plugin automatically syncs IPs on activation
+
+**For nginx users:**
+After activation, go to the settings page and copy the generated nginx configuration into your server block, then reload nginx.
 
 == Frequently Asked Questions ==
 
@@ -57,13 +65,19 @@ Yes. Use the "Additional Custom IPs" field in the settings to add your own IPs o
 
 = What happens when I deactivate the plugin? =
 
-The .htaccess rules are automatically removed, restoring normal xmlrpc.php access.
+The .htaccess rules are automatically removed (Apache), restoring normal xmlrpc.php access. nginx users will need to manually remove the location block.
 
 = Does this work with nginx? =
 
-No. This plugin uses Apache .htaccess rules. For nginx, you would need to configure your nginx.conf directly.
+Yes! The plugin auto-detects nginx and generates a ready-to-use location block with all the IP allow/deny rules. Just copy the configuration from the admin panel and add it to your nginx server block.
 
 == Changelog ==
+
+= 1.1.0 =
+* Added nginx support with auto-detection
+* Server type now displayed in admin panel
+* nginx users get copy/paste location block configuration
+* Improved status display for different server types
 
 = 1.0.0 =
 * Initial release
@@ -72,8 +86,12 @@ No. This plugin uses Apache .htaccess rules. For nginx, you would need to config
 * Admin settings page
 * Activity logging
 * Custom IP support
+* Manual .htaccess fallback for non-writable files
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+Added nginx support! The plugin now auto-detects your server type and provides appropriate configuration.
 
 = 1.0.0 =
 Initial release.
