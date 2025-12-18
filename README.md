@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon-256x256.png" alt="Whitelist XML-RPC" width="128" height="128">
+</p>
+
 # Whitelist XML-RPC
 
 ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue?logo=wordpress)
@@ -59,6 +63,7 @@ The plugin automatically syncs IPs on activation.
 ### Admin Settings Page
 
 The settings page shows:
+
 - **Protection Status** - Real-time verification that .htaccess rules are in place
 - **Last Sync** - When IPs were last updated
 - **Whitelisted IPs** - Current count of whitelisted addresses
@@ -90,6 +95,7 @@ No. This plugin uses Apache `.htaccess` rules. For nginx, you would need to conf
 ## Changelog
 
 ### 1.0.0
+
 - Initial release
 - Automatic Jetpack IP fetching
 - WordPress cron scheduling
@@ -100,7 +106,7 @@ No. This plugin uses Apache `.htaccess` rules. For nginx, you would need to conf
 
 ## License
 
-GPLv2 or later - https://www.gnu.org/licenses/gpl-2.0.html
+GPLv2 or later - [gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
 ## Author
 
