@@ -7,7 +7,7 @@
 ![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue?logo=wordpress)
 ![PHP](https://img.shields.io/badge/PHP-7.4%2B-777BB4?logo=php)
 ![License](https://img.shields.io/badge/License-GPLv2-green)
-![Version](https://img.shields.io/badge/Version-1.1.0-orange)
+![Version](https://img.shields.io/badge/Version-1.2.0-orange)
 
 Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other `xmlrpc.php` requests with 403 Forbidden.
 
@@ -140,6 +140,17 @@ The plugin displays manual copy/paste instructions with the exact rules to add t
 Yes! The plugin auto-detects nginx and generates a ready-to-use `location` block with all the IP allow/deny rules. Just copy the configuration from the admin panel and add it to your nginx server block, then reload nginx.
 
 ## Changelog
+
+### 1.2.0
+
+- Completely redesigned admin settings page
+- Modern card-based layout with two-column grid
+- Dynamic status hero banner with visual indicators
+- Quick stats display with dashicons
+- Improved IP grid display (collapsed view for many IPs)
+- Enhanced activity log with color-coded messages
+- Copy-to-clipboard buttons for configuration code
+- Better responsive design for all screen sizes
 
 ### 1.1.0
 

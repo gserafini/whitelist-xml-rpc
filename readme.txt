@@ -4,7 +4,7 @@ Tags: security, xmlrpc, jetpack, whitelist, firewall
 Requires at least: 5.0
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,16 @@ No personal data, site information, or tracking data is collected or transmitted
 
 == Changelog ==
 
+= 1.2.0 =
+* Completely redesigned admin settings page
+* Modern card-based layout with two-column grid
+* Dynamic status hero banner with visual indicators
+* Quick stats display with dashicons
+* Improved IP grid display (collapsed view for many IPs)
+* Enhanced activity log with color-coded messages
+* Copy-to-clipboard buttons for configuration code
+* Better responsive design for all screen sizes
+
 = 1.1.0 =
 * Added nginx support with auto-detection
 * Server type now displayed in admin panel
@@ -134,6 +144,9 @@ No personal data, site information, or tracking data is collected or transmitted
 * Manual .htaccess fallback for non-writable files
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Beautiful new admin interface! The settings page has been completely redesigned with a modern card-based layout.
 
 = 1.1.0 =
 Added nginx support! The plugin now auto-detects your server type and provides appropriate configuration.

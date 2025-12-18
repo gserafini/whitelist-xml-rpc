@@ -3,7 +3,7 @@
  * Plugin Name: Whitelist XML-RPC
  * Plugin URI: https://github.com/gserafini/whitelist-xml-rpc
  * Description: Automatically whitelists Jetpack server IPs for XML-RPC access, blocking all other xmlrpc.php requests with 403 Forbidden. Syncs daily via WordPress cron.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Gabriel Serafini
  * Author URI: https://serafinistudios.com
  * License: GPL v2 or later
@@ -624,6 +624,321 @@ class XMLRPC_IP_Whitelist {
     }
 
     /**
+     * Output admin page styles
+     */
+    public static function admin_styles() {
+        ?>
+        <style>
+            .xmlrpc-wrap {
+                max-width: 1200px;
+            }
+            .xmlrpc-header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+                border-bottom: 1px solid #c3c4c7;
+            }
+            .xmlrpc-header h1 {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin: 0;
+                padding: 0;
+            }
+            .xmlrpc-header .dashicons {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+                color: #2271b1;
+            }
+            .xmlrpc-status-hero {
+                background: linear-gradient(135deg, #1d2327 0%, #2c3338 100%);
+                border-radius: 8px;
+                padding: 30px;
+                margin-bottom: 25px;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                gap: 30px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            }
+            .xmlrpc-status-hero.status-active {
+                background: linear-gradient(135deg, #00a32a 0%, #007017 100%);
+            }
+            .xmlrpc-status-hero.status-warning {
+                background: linear-gradient(135deg, #dba617 0%, #996800 100%);
+            }
+            .xmlrpc-status-hero.status-error {
+                background: linear-gradient(135deg, #d63638 0%, #a00 100%);
+            }
+            .xmlrpc-status-hero.status-disabled {
+                background: linear-gradient(135deg, #646970 0%, #3c434a 100%);
+            }
+            .xmlrpc-status-icon {
+                font-size: 64px;
+                width: 64px;
+                height: 64px;
+                opacity: 0.9;
+            }
+            .xmlrpc-status-content h2 {
+                margin: 0 0 8px 0;
+                font-size: 24px;
+                font-weight: 600;
+                color: #fff;
+            }
+            .xmlrpc-status-content p {
+                margin: 0;
+                opacity: 0.9;
+                font-size: 14px;
+            }
+            .xmlrpc-status-meta {
+                margin-left: auto;
+                text-align: right;
+                font-size: 13px;
+                opacity: 0.85;
+            }
+            .xmlrpc-status-meta strong {
+                display: block;
+                font-size: 28px;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+            .xmlrpc-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+            @media (max-width: 1200px) {
+                .xmlrpc-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+            .xmlrpc-card {
+                background: #fff;
+                border: 1px solid #c3c4c7;
+                border-radius: 4px;
+                box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+            }
+            .xmlrpc-card-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 15px 20px;
+                border-bottom: 1px solid #c3c4c7;
+                background: #f6f7f7;
+            }
+            .xmlrpc-card-header h3 {
+                margin: 0;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .xmlrpc-card-header .dashicons {
+                color: #2271b1;
+            }
+            .xmlrpc-card-body {
+                padding: 20px;
+            }
+            .xmlrpc-stat-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            .xmlrpc-stat-item {
+                background: #f6f7f7;
+                border-radius: 4px;
+                padding: 15px;
+                text-align: center;
+            }
+            .xmlrpc-stat-item .dashicons {
+                font-size: 24px;
+                width: 24px;
+                height: 24px;
+                color: #2271b1;
+                margin-bottom: 8px;
+            }
+            .xmlrpc-stat-value {
+                font-size: 20px;
+                font-weight: 600;
+                color: #1d2327;
+                margin-bottom: 4px;
+            }
+            .xmlrpc-stat-label {
+                font-size: 12px;
+                color: #646970;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            .xmlrpc-info-list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .xmlrpc-info-list li {
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #f0f0f1;
+            }
+            .xmlrpc-info-list li:last-child {
+                border-bottom: none;
+            }
+            .xmlrpc-info-list .label {
+                color: #646970;
+                font-size: 13px;
+            }
+            .xmlrpc-info-list .value {
+                font-weight: 500;
+                color: #1d2327;
+                font-size: 13px;
+            }
+            .xmlrpc-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 3px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            .xmlrpc-badge-success {
+                background: #edfaef;
+                color: #00a32a;
+            }
+            .xmlrpc-badge-warning {
+                background: #fcf9e8;
+                color: #996800;
+            }
+            .xmlrpc-badge-error {
+                background: #fcf0f1;
+                color: #d63638;
+            }
+            .xmlrpc-badge-info {
+                background: #f0f6fc;
+                color: #2271b1;
+            }
+            .xmlrpc-actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 15px;
+            }
+            .xmlrpc-settings-form .form-table th {
+                width: 200px;
+                padding: 15px 10px 15px 0;
+            }
+            .xmlrpc-settings-form .form-table td {
+                padding: 15px 10px;
+            }
+            .xmlrpc-code-block {
+                background: #1d2327;
+                color: #50c878;
+                border-radius: 4px;
+                padding: 15px;
+                font-family: Consolas, Monaco, monospace;
+                font-size: 12px;
+                line-height: 1.6;
+                overflow-x: auto;
+                max-height: 250px;
+                overflow-y: auto;
+            }
+            .xmlrpc-code-block::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            .xmlrpc-code-block::-webkit-scrollbar-track {
+                background: #2c3338;
+            }
+            .xmlrpc-code-block::-webkit-scrollbar-thumb {
+                background: #50575e;
+                border-radius: 4px;
+            }
+            .xmlrpc-ip-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 8px;
+                max-height: 200px;
+                overflow-y: auto;
+                padding: 5px;
+            }
+            .xmlrpc-ip-item {
+                background: #f0f0f1;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-family: Consolas, Monaco, monospace;
+                font-size: 12px;
+                color: #1d2327;
+            }
+            .xmlrpc-log-entry {
+                padding: 8px 12px;
+                margin-bottom: 4px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-family: Consolas, Monaco, monospace;
+            }
+            .xmlrpc-log-entry:nth-child(odd) {
+                background: #f6f7f7;
+            }
+            .xmlrpc-log-time {
+                color: #646970;
+                margin-right: 10px;
+            }
+            .xmlrpc-log-message {
+                color: #1d2327;
+            }
+            .xmlrpc-log-message.error {
+                color: #d63638;
+            }
+            .xmlrpc-log-message.success {
+                color: #00a32a;
+            }
+            .xmlrpc-instructions {
+                background: #f6f7f7;
+                border-left: 4px solid #2271b1;
+                padding: 15px 20px;
+                margin-top: 15px;
+                border-radius: 0 4px 4px 0;
+            }
+            .xmlrpc-instructions h4 {
+                margin: 0 0 10px 0;
+                font-size: 13px;
+            }
+            .xmlrpc-instructions ol {
+                margin: 0;
+                padding-left: 20px;
+            }
+            .xmlrpc-instructions li {
+                margin-bottom: 5px;
+                font-size: 13px;
+                color: #646970;
+            }
+            .xmlrpc-full-width {
+                grid-column: 1 / -1;
+            }
+            .xmlrpc-copy-btn {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.2);
+                color: #fff;
+                padding: 5px 12px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.2s;
+            }
+            .xmlrpc-copy-btn:hover {
+                background: rgba(255,255,255,0.2);
+            }
+            .xmlrpc-code-wrapper {
+                position: relative;
+            }
+        </style>
+        <?php
+    }
+
+    /**
      * Render settings page
      */
     public static function render_settings_page() {
@@ -646,204 +961,320 @@ class XMLRPC_IP_Whitelist {
         // Verify .htaccess rules exist (only on admin page load, Apache only)
         $htaccess_verified = $is_nginx ? false : self::verify_htaccess_rules();
 
+        // Determine status
+        $status_class = 'status-disabled';
+        $status_icon = 'dashicons-shield-alt';
+        $status_title = __( 'Protection Disabled', 'whitelist-xml-rpc' );
+        $status_desc = __( 'XML-RPC protection is currently disabled.', 'whitelist-xml-rpc' );
+
+        if ( $enabled === '1' ) {
+            if ( $is_nginx ) {
+                $status_class = 'status-warning';
+                $status_icon = 'dashicons-warning';
+                $status_title = __( 'Manual Configuration Required', 'whitelist-xml-rpc' );
+                $status_desc = __( 'nginx detected. Copy the configuration below to your server.', 'whitelist-xml-rpc' );
+            } elseif ( $htaccess_verified ) {
+                $status_class = 'status-active';
+                $status_icon = 'dashicons-shield';
+                $status_title = __( 'Protection Active', 'whitelist-xml-rpc' );
+                $status_desc = __( 'Your XML-RPC endpoint is protected. Only whitelisted IPs can access it.', 'whitelist-xml-rpc' );
+            } else {
+                $status_class = 'status-error';
+                $status_icon = 'dashicons-dismiss';
+                $status_title = __( 'Protection Not Active', 'whitelist-xml-rpc' );
+                $status_desc = __( '.htaccess rules are missing. Click "Sync Now" to activate protection.', 'whitelist-xml-rpc' );
+            }
+        }
+
+        // Output styles
+        self::admin_styles();
+
         ?>
-        <div class="wrap">
-            <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+        <div class="wrap xmlrpc-wrap">
+            <div class="xmlrpc-header">
+                <h1>
+                    <span class="dashicons dashicons-shield"></span>
+                    <?php echo esc_html( get_admin_page_title() ); ?>
+                </h1>
+            </div>
 
-            <div class="card" style="max-width: 800px; margin-bottom: 20px;">
-                <h2 style="margin-top: 0;"><?php _e( 'Status', 'whitelist-xml-rpc' ); ?></h2>
-                <table class="form-table">
-                    <tr>
-                        <th><?php _e( 'Server Type', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <?php if ( $is_nginx ) : ?>
-                                <span style="color: #2271b1; font-weight: bold;">nginx</span>
-                                <span style="color: #666;"> - <?php _e( 'Manual configuration required', 'whitelist-xml-rpc' ); ?></span>
-                            <?php else : ?>
-                                <span style="color: green;">Apache</span>
-                                <span style="color: #666;"> - <?php _e( 'Automatic .htaccess management', 'whitelist-xml-rpc' ); ?></span>
+            <!-- Status Hero -->
+            <div class="xmlrpc-status-hero <?php echo esc_attr( $status_class ); ?>">
+                <span class="dashicons <?php echo esc_attr( $status_icon ); ?> xmlrpc-status-icon"></span>
+                <div class="xmlrpc-status-content">
+                    <h2><?php echo esc_html( $status_title ); ?></h2>
+                    <p><?php echo esc_html( $status_desc ); ?></p>
+                </div>
+                <div class="xmlrpc-status-meta">
+                    <strong><?php echo esc_html( $last_ip_count ); ?></strong>
+                    <?php _e( 'Whitelisted IPs', 'whitelist-xml-rpc' ); ?>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="xmlrpc-grid">
+                <!-- Quick Stats -->
+                <div class="xmlrpc-card">
+                    <div class="xmlrpc-card-header">
+                        <span class="dashicons dashicons-chart-bar"></span>
+                        <h3><?php _e( 'Quick Stats', 'whitelist-xml-rpc' ); ?></h3>
+                    </div>
+                    <div class="xmlrpc-card-body">
+                        <div class="xmlrpc-stat-grid">
+                            <div class="xmlrpc-stat-item">
+                                <span class="dashicons dashicons-admin-network"></span>
+                                <div class="xmlrpc-stat-value"><?php echo esc_html( $last_ip_count ); ?></div>
+                                <div class="xmlrpc-stat-label"><?php _e( 'IPs Whitelisted', 'whitelist-xml-rpc' ); ?></div>
+                            </div>
+                            <div class="xmlrpc-stat-item">
+                                <span class="dashicons dashicons-update"></span>
+                                <div class="xmlrpc-stat-value">
+                                    <?php echo $last_sync ? esc_html( human_time_diff( $last_sync, current_time( 'timestamp' ) ) ) : '—'; ?>
+                                </div>
+                                <div class="xmlrpc-stat-label"><?php _e( 'Since Last Sync', 'whitelist-xml-rpc' ); ?></div>
+                            </div>
+                            <div class="xmlrpc-stat-item">
+                                <span class="dashicons dashicons-cloud"></span>
+                                <div class="xmlrpc-stat-value"><?php echo $is_nginx ? 'nginx' : 'Apache'; ?></div>
+                                <div class="xmlrpc-stat-label"><?php _e( 'Server Type', 'whitelist-xml-rpc' ); ?></div>
+                            </div>
+                            <div class="xmlrpc-stat-item">
+                                <span class="dashicons dashicons-calendar-alt"></span>
+                                <div class="xmlrpc-stat-value"><?php _e( 'Daily', 'whitelist-xml-rpc' ); ?></div>
+                                <div class="xmlrpc-stat-label"><?php _e( 'Sync Schedule', 'whitelist-xml-rpc' ); ?></div>
+                            </div>
+                        </div>
+                        <div class="xmlrpc-actions">
+                            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 0;">
+                                <input type="hidden" name="action" value="xmlrpc_whitelist_sync">
+                                <?php wp_nonce_field( 'xmlrpc_whitelist_sync_action' ); ?>
+                                <button type="submit" class="button button-primary">
+                                    <span class="dashicons dashicons-update" style="vertical-align: middle; margin-right: 5px;"></span>
+                                    <?php _e( 'Sync Now', 'whitelist-xml-rpc' ); ?>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Info -->
+                <div class="xmlrpc-card">
+                    <div class="xmlrpc-card-header">
+                        <span class="dashicons dashicons-info-outline"></span>
+                        <h3><?php _e( 'System Information', 'whitelist-xml-rpc' ); ?></h3>
+                    </div>
+                    <div class="xmlrpc-card-body">
+                        <ul class="xmlrpc-info-list">
+                            <li>
+                                <span class="label"><?php _e( 'Protection', 'whitelist-xml-rpc' ); ?></span>
+                                <span class="value">
+                                    <?php if ( $enabled === '1' ) : ?>
+                                        <span class="xmlrpc-badge xmlrpc-badge-success"><?php _e( 'Enabled', 'whitelist-xml-rpc' ); ?></span>
+                                    <?php else : ?>
+                                        <span class="xmlrpc-badge xmlrpc-badge-error"><?php _e( 'Disabled', 'whitelist-xml-rpc' ); ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="label"><?php _e( 'Server Type', 'whitelist-xml-rpc' ); ?></span>
+                                <span class="value">
+                                    <span class="xmlrpc-badge xmlrpc-badge-info"><?php echo $is_nginx ? 'nginx' : 'Apache'; ?></span>
+                                </span>
+                            </li>
+                            <?php if ( ! $is_nginx ) : ?>
+                            <li>
+                                <span class="label"><?php _e( '.htaccess', 'whitelist-xml-rpc' ); ?></span>
+                                <span class="value">
+                                    <?php if ( self::is_htaccess_writable() ) : ?>
+                                        <span class="xmlrpc-badge xmlrpc-badge-success"><?php _e( 'Writable', 'whitelist-xml-rpc' ); ?></span>
+                                    <?php else : ?>
+                                        <span class="xmlrpc-badge xmlrpc-badge-warning"><?php _e( 'Not Writable', 'whitelist-xml-rpc' ); ?></span>
+                                    <?php endif; ?>
+                                </span>
+                            </li>
                             <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><?php _e( 'Protection Status', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <?php if ( $enabled !== '1' ) : ?>
-                                <span style="color: gray;">&#10007; <?php _e( 'Disabled', 'whitelist-xml-rpc' ); ?></span>
-                            <?php elseif ( $is_nginx ) : ?>
-                                <span style="color: #2271b1; font-weight: bold;">&#9888; <?php _e( 'Manual Config Required - copy nginx rules below', 'whitelist-xml-rpc' ); ?></span>
-                            <?php elseif ( $htaccess_verified ) : ?>
-                                <span style="color: green; font-weight: bold;">&#10003; <?php _e( 'Active', 'whitelist-xml-rpc' ); ?></span>
-                            <?php else : ?>
-                                <span style="color: red; font-weight: bold;">&#10007; <?php _e( 'Not Active - .htaccess rules missing! Click Sync Now', 'whitelist-xml-rpc' ); ?></span>
+                            <li>
+                                <span class="label"><?php _e( 'Last Sync', 'whitelist-xml-rpc' ); ?></span>
+                                <span class="value">
+                                    <?php
+                                    if ( $last_sync ) {
+                                        echo esc_html( date_i18n( 'M j, Y @ H:i', $last_sync ) );
+                                    } else {
+                                        _e( 'Never', 'whitelist-xml-rpc' );
+                                    }
+                                    ?>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="label"><?php _e( 'Next Sync', 'whitelist-xml-rpc' ); ?></span>
+                                <span class="value">
+                                    <?php
+                                    if ( $next_scheduled ) {
+                                        echo esc_html( date_i18n( 'M j, Y @ H:i', $next_scheduled ) );
+                                    } else {
+                                        _e( 'Not scheduled', 'whitelist-xml-rpc' );
+                                    }
+                                    ?>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="xmlrpc-card xmlrpc-full-width">
+                    <div class="xmlrpc-card-header">
+                        <span class="dashicons dashicons-admin-settings"></span>
+                        <h3><?php _e( 'Settings', 'whitelist-xml-rpc' ); ?></h3>
+                    </div>
+                    <div class="xmlrpc-card-body">
+                        <form method="post" action="options.php" class="xmlrpc-settings-form">
+                            <?php settings_fields( 'xmlrpc_whitelist_settings' ); ?>
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row"><?php _e( 'Enable Protection', 'whitelist-xml-rpc' ); ?></th>
+                                    <td>
+                                        <label class="xmlrpc-toggle">
+                                            <input type="checkbox" name="<?php echo self::OPTION_PREFIX; ?>enabled" value="1" <?php checked( $enabled, '1' ); ?>>
+                                            <?php _e( 'Block xmlrpc.php access except for whitelisted IPs', 'whitelist-xml-rpc' ); ?>
+                                        </label>
+                                        <p class="description"><?php _e( 'When disabled, .htaccess rules will be removed and all IPs can access xmlrpc.php.', 'whitelist-xml-rpc' ); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e( 'IP Source URL', 'whitelist-xml-rpc' ); ?></th>
+                                    <td>
+                                        <input type="url" name="<?php echo self::OPTION_PREFIX; ?>ip_source" value="<?php echo esc_attr( $ip_source ); ?>" class="regular-text code">
+                                        <p class="description"><?php _e( 'URL to fetch Jetpack server IPs from (one IP/CIDR per line)', 'whitelist-xml-rpc' ); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e( 'Custom IPs', 'whitelist-xml-rpc' ); ?></th>
+                                    <td>
+                                        <textarea name="<?php echo self::OPTION_PREFIX; ?>custom_ips" rows="4" class="large-text code" placeholder="192.168.1.1&#10;10.0.0.0/8"><?php echo esc_textarea( $custom_ips ); ?></textarea>
+                                        <p class="description"><?php _e( 'Additional IPs to whitelist (one per line). Supports CIDR notation like 192.168.1.0/24', 'whitelist-xml-rpc' ); ?></p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <?php submit_button( __( 'Save Settings', 'whitelist-xml-rpc' ), 'primary' ); ?>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Whitelisted IPs -->
+                <div class="xmlrpc-card">
+                    <div class="xmlrpc-card-header">
+                        <span class="dashicons dashicons-networking"></span>
+                        <h3>
+                            <?php _e( 'Whitelisted IPs', 'whitelist-xml-rpc' ); ?>
+                            <?php if ( $cache_status === 'not_cached' ) : ?>
+                                <small style="font-weight: normal; color: #646970; margin-left: 10px;">(<?php _e( 'sync to refresh', 'whitelist-xml-rpc' ); ?>)</small>
                             <?php endif; ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><?php _e( 'Last Sync', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
+                        </h3>
+                    </div>
+                    <div class="xmlrpc-card-body">
+                        <?php if ( ! empty( $current_ips ) ) : ?>
+                            <div class="xmlrpc-ip-grid">
+                                <?php foreach ( array_slice( $current_ips, 0, 50 ) as $ip ) : ?>
+                                    <div class="xmlrpc-ip-item"><?php echo esc_html( $ip ); ?></div>
+                                <?php endforeach; ?>
+                                <?php if ( count( $current_ips ) > 50 ) : ?>
+                                    <div class="xmlrpc-ip-item" style="background: #2271b1; color: #fff;">+<?php echo count( $current_ips ) - 50; ?> more</div>
+                                <?php endif; ?>
+                            </div>
+                        <?php else : ?>
+                            <p style="color: #646970; margin: 0;"><?php _e( 'No IPs loaded. Click "Sync Now" to fetch the whitelist.', 'whitelist-xml-rpc' ); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Activity Log -->
+                <div class="xmlrpc-card">
+                    <div class="xmlrpc-card-header">
+                        <span class="dashicons dashicons-list-view"></span>
+                        <h3><?php _e( 'Activity Log', 'whitelist-xml-rpc' ); ?></h3>
+                    </div>
+                    <div class="xmlrpc-card-body" style="max-height: 300px; overflow-y: auto;">
+                        <?php if ( ! empty( $log ) ) : ?>
                             <?php
-                            if ( $last_sync ) {
-                                echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $last_sync ) );
-                                echo ' (' . esc_html( human_time_diff( $last_sync, current_time( 'timestamp' ) ) ) . ' ago)';
-                            } else {
-                                _e( 'Never', 'whitelist-xml-rpc' );
-                            }
+                            $log_reversed = array_reverse( array_slice( $log, -20 ) );
+                            foreach ( $log_reversed as $entry ) :
+                                $msg_class = '';
+                                if ( strpos( $entry['message'], 'ERROR' ) !== false ) {
+                                    $msg_class = 'error';
+                                } elseif ( strpos( $entry['message'], 'Successfully' ) !== false ) {
+                                    $msg_class = 'success';
+                                }
                             ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><?php _e( 'Whitelisted IPs', 'whitelist-xml-rpc' ); ?></th>
-                        <td><?php echo esc_html( $last_ip_count ); ?></td>
-                    </tr>
-                    <tr>
-                        <th><?php _e( 'Next Scheduled Sync', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <?php
-                            if ( $next_scheduled ) {
-                                echo esc_html( date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next_scheduled ) );
-                            } else {
-                                _e( 'Not scheduled', 'whitelist-xml-rpc' );
-                            }
-                            ?>
-                        </td>
-                    </tr>
-                    <?php if ( ! $is_nginx ) : ?>
-                    <tr>
-                        <th><?php _e( '.htaccess Status', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <?php if ( self::is_htaccess_writable() ) : ?>
-                                <span style="color: green;">&#10003; <?php _e( 'Writable', 'whitelist-xml-rpc' ); ?></span>
-                            <?php else : ?>
-                                <span style="color: orange;">&#9888; <?php _e( 'Not writable - see Manual Rules below', 'whitelist-xml-rpc' ); ?></span>
-                            <?php endif; ?>
-                        </td>
-                    </tr>
+                                <div class="xmlrpc-log-entry">
+                                    <span class="xmlrpc-log-time"><?php echo esc_html( $entry['time'] ); ?></span>
+                                    <span class="xmlrpc-log-message <?php echo esc_attr( $msg_class ); ?>"><?php echo esc_html( $entry['message'] ); ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <p style="color: #646970; margin: 0;"><?php _e( 'No log entries yet.', 'whitelist-xml-rpc' ); ?></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Server Configuration -->
+                <?php if ( $is_nginx ) : ?>
+                    <?php $nginx_rules = self::generate_nginx_rules( $current_ips ); ?>
+                    <?php if ( ! empty( $nginx_rules ) ) : ?>
+                    <div class="xmlrpc-card xmlrpc-full-width">
+                        <div class="xmlrpc-card-header" style="background: #fcf9e8; border-color: #dba617;">
+                            <span class="dashicons dashicons-warning" style="color: #996800;"></span>
+                            <h3 style="color: #996800;"><?php _e( 'nginx Configuration Required', 'whitelist-xml-rpc' ); ?></h3>
+                        </div>
+                        <div class="xmlrpc-card-body">
+                            <p><?php _e( 'Since you\'re running nginx, add these rules to your server configuration:', 'whitelist-xml-rpc' ); ?></p>
+                            <div class="xmlrpc-code-wrapper">
+                                <button type="button" class="xmlrpc-copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.textContent).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000); });">Copy</button>
+                                <pre class="xmlrpc-code-block"><?php echo esc_html( $nginx_rules ); ?></pre>
+                            </div>
+                            <div class="xmlrpc-instructions">
+                                <h4><?php _e( 'Instructions:', 'whitelist-xml-rpc' ); ?></h4>
+                                <ol>
+                                    <li><?php _e( 'SSH into your server', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Open your nginx site configuration', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Add this location block inside your server {} block', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Adjust the fastcgi_pass path to match your PHP-FPM socket', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Test: nginx -t', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Reload: systemctl reload nginx', 'whitelist-xml-rpc' ); ?></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
-                </table>
-
-                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 10px;">
-                    <input type="hidden" name="action" value="xmlrpc_whitelist_sync">
-                    <?php wp_nonce_field( 'xmlrpc_whitelist_sync_action' ); ?>
-                    <?php submit_button( __( 'Sync Now', 'whitelist-xml-rpc' ), 'secondary', 'submit', false ); ?>
-                </form>
-            </div>
-
-            <form method="post" action="options.php">
-                <?php settings_fields( 'xmlrpc_whitelist_settings' ); ?>
-
-                <table class="form-table">
-                    <tr>
-                        <th scope="row"><?php _e( 'Enable Protection', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="<?php echo self::OPTION_PREFIX; ?>enabled" value="1" <?php checked( $enabled, '1' ); ?>>
-                                <?php _e( 'Block xmlrpc.php access except for whitelisted IPs', 'whitelist-xml-rpc' ); ?>
-                            </label>
-                            <p class="description"><?php _e( 'When disabled, .htaccess rules will be removed.', 'whitelist-xml-rpc' ); ?></p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'IP Source URL', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <input type="url" name="<?php echo self::OPTION_PREFIX; ?>ip_source" value="<?php echo esc_attr( $ip_source ); ?>" class="regular-text">
-                            <p class="description"><?php _e( 'URL to fetch IP list from (one IP/CIDR per line)', 'whitelist-xml-rpc' ); ?></p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?php _e( 'Additional Custom IPs', 'whitelist-xml-rpc' ); ?></th>
-                        <td>
-                            <textarea name="<?php echo self::OPTION_PREFIX; ?>custom_ips" rows="5" class="large-text code"><?php echo esc_textarea( $custom_ips ); ?></textarea>
-                            <p class="description"><?php _e( 'Additional IPs to whitelist (one per line, supports CIDR notation)', 'whitelist-xml-rpc' ); ?></p>
-                        </td>
-                    </tr>
-                </table>
-
-                <?php submit_button(); ?>
-            </form>
-
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h2 style="margin-top: 0;">
-                    <?php _e( 'Current Whitelisted IPs', 'whitelist-xml-rpc' ); ?>
-                    <?php if ( $cache_status === 'not_cached' ) : ?>
-                        <small style="font-weight: normal; color: #666;">(<?php _e( 'click Sync Now to refresh', 'whitelist-xml-rpc' ); ?>)</small>
+                <?php else : ?>
+                    <?php $manual_rules = self::get_manual_htaccess_rules(); ?>
+                    <?php if ( ! empty( $manual_rules ) && ! self::is_htaccess_writable() ) : ?>
+                    <div class="xmlrpc-card xmlrpc-full-width">
+                        <div class="xmlrpc-card-header" style="background: #fcf9e8; border-color: #dba617;">
+                            <span class="dashicons dashicons-warning" style="color: #996800;"></span>
+                            <h3 style="color: #996800;"><?php _e( 'Manual .htaccess Configuration Required', 'whitelist-xml-rpc' ); ?></h3>
+                        </div>
+                        <div class="xmlrpc-card-body">
+                            <p><?php _e( 'Your .htaccess file is not writable. Add these rules manually:', 'whitelist-xml-rpc' ); ?></p>
+                            <div class="xmlrpc-code-wrapper">
+                                <button type="button" class="xmlrpc-copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.textContent).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000); });">Copy</button>
+                                <pre class="xmlrpc-code-block"><?php echo esc_html( $manual_rules ); ?></pre>
+                            </div>
+                            <div class="xmlrpc-instructions">
+                                <h4><?php _e( 'Instructions:', 'whitelist-xml-rpc' ); ?></h4>
+                                <ol>
+                                    <li><?php _e( 'Connect via FTP/SFTP or file manager', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Open .htaccess in your WordPress root', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Paste these rules at the top (before # BEGIN WordPress)', 'whitelist-xml-rpc' ); ?></li>
+                                    <li><?php _e( 'Save the file', 'whitelist-xml-rpc' ); ?></li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
-                </h2>
-                <pre style="background: #f0f0f0; padding: 10px; max-height: 200px; overflow-y: auto;"><?php
-                    if ( ! empty( $current_ips ) ) {
-                        echo esc_html( implode( "\n", $current_ips ) );
-                    } else {
-                        _e( 'No IPs loaded - click Sync Now to fetch', 'whitelist-xml-rpc' );
-                    }
-                ?></pre>
-            </div>
+                <?php endif; ?>
 
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h2 style="margin-top: 0;"><?php _e( 'Activity Log', 'whitelist-xml-rpc' ); ?></h2>
-                <pre style="background: #f0f0f0; padding: 10px; max-height: 300px; overflow-y: auto; font-size: 12px;"><?php
-                    if ( ! empty( $log ) ) {
-                        $log_reversed = array_reverse( $log );
-                        foreach ( $log_reversed as $entry ) {
-                            echo esc_html( '[' . $entry['time'] . '] ' . $entry['message'] ) . "\n";
-                        }
-                    } else {
-                        _e( 'No log entries', 'whitelist-xml-rpc' );
-                    }
-                ?></pre>
             </div>
-
-            <?php if ( $is_nginx ) : ?>
-            <?php
-            $nginx_rules = self::generate_nginx_rules( $current_ips );
-            if ( ! empty( $nginx_rules ) ) :
-            ?>
-            <div class="card" style="max-width: 800px; margin-top: 20px; border-left: 4px solid #2271b1;">
-                <h2 style="margin-top: 0;">
-                    <?php _e( 'nginx Configuration', 'whitelist-xml-rpc' ); ?>
-                    <span style="color: #d63638; font-size: 14px; font-weight: normal;"><?php _e( '(Required - add to your nginx config)', 'whitelist-xml-rpc' ); ?></span>
-                </h2>
-                <p class="description">
-                    <?php _e( 'Since you\'re running nginx, you need to manually add these rules to your server configuration:', 'whitelist-xml-rpc' ); ?>
-                </p>
-                <textarea readonly style="width: 100%; height: 300px; font-family: monospace; font-size: 12px; background: #f0f0f0;" onclick="this.select();"><?php echo esc_textarea( $nginx_rules ); ?></textarea>
-                <p class="description" style="margin-top: 10px;">
-                    <strong><?php _e( 'Instructions:', 'whitelist-xml-rpc' ); ?></strong><br>
-                    1. <?php _e( 'SSH into your server', 'whitelist-xml-rpc' ); ?><br>
-                    2. <?php _e( 'Open your nginx site configuration (e.g., /etc/nginx/sites-available/yoursite)', 'whitelist-xml-rpc' ); ?><br>
-                    3. <?php _e( 'Add this location block inside your server {} block', 'whitelist-xml-rpc' ); ?><br>
-                    4. <?php _e( 'Adjust the fastcgi_pass path to match your PHP-FPM socket', 'whitelist-xml-rpc' ); ?><br>
-                    5. <?php _e( 'Test config: nginx -t', 'whitelist-xml-rpc' ); ?><br>
-                    6. <?php _e( 'Reload nginx: systemctl reload nginx', 'whitelist-xml-rpc' ); ?>
-                </p>
-            </div>
-            <?php endif; ?>
-            <?php else : ?>
-            <?php
-            $manual_rules = self::get_manual_htaccess_rules();
-            if ( ! empty( $manual_rules ) ) :
-            ?>
-            <div class="card" style="max-width: 800px; margin-top: 20px; <?php echo self::is_htaccess_writable() ? '' : 'border-left: 4px solid #ffb900;'; ?>">
-                <h2 style="margin-top: 0;">
-                    <?php _e( 'Manual .htaccess Rules', 'whitelist-xml-rpc' ); ?>
-                    <?php if ( ! self::is_htaccess_writable() ) : ?>
-                        <span style="color: #d63638; font-size: 14px; font-weight: normal;"><?php _e( '(Required - .htaccess not writable)', 'whitelist-xml-rpc' ); ?></span>
-                    <?php endif; ?>
-                </h2>
-                <p class="description">
-                    <?php _e( 'If your .htaccess file is not writable by WordPress, copy and paste these rules into your .htaccess file manually:', 'whitelist-xml-rpc' ); ?>
-                </p>
-                <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px; background: #f0f0f0;" onclick="this.select();"><?php echo esc_textarea( $manual_rules ); ?></textarea>
-                <p class="description" style="margin-top: 10px;">
-                    <strong><?php _e( 'Instructions:', 'whitelist-xml-rpc' ); ?></strong><br>
-                    1. <?php _e( 'Connect to your server via FTP/SFTP or file manager', 'whitelist-xml-rpc' ); ?><br>
-                    2. <?php _e( 'Open the .htaccess file in your WordPress root directory', 'whitelist-xml-rpc' ); ?><br>
-                    3. <?php _e( 'Paste these rules at the top of the file (before # BEGIN WordPress)', 'whitelist-xml-rpc' ); ?><br>
-                    4. <?php _e( 'Save the file', 'whitelist-xml-rpc' ); ?>
-                </p>
-            </div>
-            <?php endif; ?>
-            <?php endif; ?>
-
         </div>
         <?php
     }
