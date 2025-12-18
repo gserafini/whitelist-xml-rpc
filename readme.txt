@@ -1,8 +1,8 @@
 === Whitelist XML-RPC ===
 Contributors: gserafini
-Tags: security, xmlrpc, jetpack, whitelist, firewall, nginx
+Tags: security, xmlrpc, jetpack, whitelist, firewall
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.1.0
 License: GPLv2 or later
@@ -101,6 +101,20 @@ The .htaccess rules are automatically removed (Apache), restoring normal xmlrpc.
 = Does this work with nginx? =
 
 Yes! The plugin auto-detects nginx and generates a ready-to-use location block with all the IP allow/deny rules. Just copy the configuration from the admin panel and add it to your nginx server block.
+
+== Privacy ==
+
+This plugin contacts an external server to fetch IP addresses:
+
+* **Default URL**: `https://jetpack.com/ips-v4.txt`
+* **When**: Once daily via WordPress cron, and on manual sync
+* **What data is sent**: None - only a standard HTTP GET request
+* **What data is received**: A plain text list of IP addresses
+* **Why**: To keep the Jetpack server IP whitelist current
+
+You can change the IP source URL in the plugin settings or disable the plugin entirely if you prefer not to make external requests.
+
+No personal data, site information, or tracking data is collected or transmitted by this plugin.
 
 == Changelog ==
 

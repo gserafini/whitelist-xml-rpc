@@ -1,0 +1,53 @@
+# Files to exclude from WordPress.org SVN distribution
+# This file is used by deployment scripts to create clean releases
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# GitHub
+.github
+
+# Development files
+.distignore
+.editorconfig
+.eslintrc
+.stylelintrc
+phpcs.xml
+phpcs.xml.dist
+phpunit.xml
+phpunit.xml.dist
+composer.json
+composer.lock
+package.json
+package-lock.json
+Gruntfile.js
+webpack.config.js
+
+# Build/Development directories
+node_modules
+vendor
+tests
+releases
+
+# IDE
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (GitHub-specific)
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# CI/CD
+.travis.yml
+.circleci
+bitbucket-pipelines.yml

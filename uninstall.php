@@ -26,6 +26,9 @@ foreach ( $options as $option ) {
     delete_option( $option );
 }
 
+// Delete transients
+delete_transient( 'xmlrpc_whitelist_cached_ips' );
+
 // Clear any scheduled cron events
 $timestamp = wp_next_scheduled( 'xmlrpc_whitelist_sync' );
 if ( $timestamp ) {

@@ -157,6 +157,20 @@ Yes! The plugin auto-detects nginx and generates a ready-to-use `location` block
 - Custom IP support
 - Manual .htaccess fallback for non-writable files
 
+## Privacy
+
+This plugin contacts an external server to fetch IP addresses:
+
+- **Default URL**: `https://jetpack.com/ips-v4.txt`
+- **When**: Once daily via WordPress cron, and on manual sync
+- **What data is sent**: None - only a standard HTTP GET request
+- **What data is received**: A plain text list of IP addresses
+- **Why**: To keep the Jetpack server IP whitelist current
+
+You can change the IP source URL in the plugin settings or disable the plugin entirely if you prefer not to make external requests.
+
+No personal data, site information, or tracking data is collected or transmitted.
+
 ## License
 
 GPLv2 or later - [gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
