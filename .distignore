@@ -51,3 +51,7 @@ CODE_OF_CONDUCT.md
 .travis.yml
 .circleci
 bitbucket-pipelines.yml
+
+# Build artifacts
+build-dist.sh
+dist
