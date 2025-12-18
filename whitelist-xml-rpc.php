@@ -646,11 +646,10 @@ class XMLRPC_IP_Whitelist {
                 margin: 0;
                 padding: 0;
             }
-            .xmlrpc-header .dashicons {
-                font-size: 32px;
-                width: 32px;
-                height: 32px;
-                color: #2271b1;
+            .xmlrpc-admin-icon {
+                width: 36px;
+                height: 36px;
+                object-fit: contain;
             }
             .xmlrpc-status-hero {
                 background: linear-gradient(135deg, #1d2327 0%, #2c3338 100%);
@@ -993,7 +992,7 @@ class XMLRPC_IP_Whitelist {
         <div class="wrap xmlrpc-wrap">
             <div class="xmlrpc-header">
                 <h1>
-                    <span class="dashicons dashicons-shield"></span>
+                    <img src="<?php echo esc_url( plugins_url( 'assets/admin-icon.png', __FILE__ ) ); ?>" alt="" class="xmlrpc-admin-icon">
                     <?php echo esc_html( get_admin_page_title() ); ?>
                 </h1>
             </div>
