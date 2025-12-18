@@ -585,13 +585,12 @@ class XMLRPC_IP_Whitelist {
             return;
         }
 
-        if ( isset( $_GET['synced'] ) ) {
-            $class = $_GET['synced'] === '1' ? 'notice-success' : 'notice-error';
-            $message = $_GET['synced'] === '1'
-                ? __( 'IP whitelist synced successfully!', 'whitelist-xml-rpc' )
-                : __( 'Failed to sync IP whitelist. Check the log below.', 'whitelist-xml-rpc' );
-
-            printf( '<div class="notice %s is-dismissible"><p>%s</p></div>', esc_attr( $class ), esc_html( $message ) );
+        // Only show error notice - success is indicated by updated stats
+        if ( isset( $_GET['synced'] ) && $_GET['synced'] !== '1' ) {
+            printf(
+                '<div class="notice notice-error is-dismissible"><p>%s</p></div>',
+                esc_html__( 'Failed to sync IP whitelist. Check the log below.', 'whitelist-xml-rpc' )
+            );
         }
 
         // Re-sync after settings change (WordPress Settings API handles nonce via options.php)
