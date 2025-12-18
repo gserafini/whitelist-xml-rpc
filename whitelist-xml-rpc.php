@@ -610,9 +610,9 @@ class XMLRPC_IP_Whitelist {
     public static function log( $message ) {
         $log = get_option( self::OPTION_PREFIX . 'log', array() );
 
-        // Keep only last 50 entries
-        if ( count( $log ) >= 50 ) {
-            $log = array_slice( $log, -49 );
+        // Keep only last 8 entries
+        if ( count( $log ) >= 8 ) {
+            $log = array_slice( $log, -7 );
         }
 
         $log[] = array(
@@ -647,8 +647,8 @@ class XMLRPC_IP_Whitelist {
                 padding: 0;
             }
             .xmlrpc-admin-icon {
-                width: 36px;
-                height: 36px;
+                width: 42px;
+                height: 42px;
                 object-fit: contain;
             }
             .xmlrpc-status-hero {
@@ -821,6 +821,15 @@ class XMLRPC_IP_Whitelist {
                 display: flex;
                 gap: 10px;
                 margin-top: 15px;
+            }
+            .xmlrpc-button-row {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-top: 20px;
+            }
+            .xmlrpc-button-row .button {
+                margin: 0 !important;
             }
             .xmlrpc-settings-form .form-table th {
                 width: 200px;
@@ -1043,16 +1052,6 @@ class XMLRPC_IP_Whitelist {
                                 <div class="xmlrpc-stat-label"><?php _e( 'Sync Schedule', 'whitelist-xml-rpc' ); ?></div>
                             </div>
                         </div>
-                        <div class="xmlrpc-actions">
-                            <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 0;">
-                                <input type="hidden" name="action" value="xmlrpc_whitelist_sync">
-                                <?php wp_nonce_field( 'xmlrpc_whitelist_sync_action' ); ?>
-                                <button type="submit" class="button button-primary">
-                                    <span class="dashicons dashicons-update" style="vertical-align: middle; margin-right: 5px;"></span>
-                                    <?php _e( 'Sync Now', 'whitelist-xml-rpc' ); ?>
-                                </button>
-                            </form>
-                        </div>
                     </div>
                 </div>
 
@@ -1155,8 +1154,18 @@ class XMLRPC_IP_Whitelist {
                                     </td>
                                 </tr>
                             </table>
-                            <?php submit_button( __( 'Save Settings', 'whitelist-xml-rpc' ), 'primary' ); ?>
+                            <div class="xmlrpc-button-row">
+                                <?php submit_button( __( 'Save Settings', 'whitelist-xml-rpc' ), 'primary', 'submit', false ); ?>
                         </form>
+                                <form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 0;">
+                                    <input type="hidden" name="action" value="xmlrpc_whitelist_sync">
+                                    <?php wp_nonce_field( 'xmlrpc_whitelist_sync_action' ); ?>
+                                    <button type="submit" class="button button-secondary">
+                                        <span class="dashicons dashicons-update" style="vertical-align: middle; margin-right: 5px;"></span>
+                                        <?php _e( 'Sync Now', 'whitelist-xml-rpc' ); ?>
+                                    </button>
+                                </form>
+                            </div>
                     </div>
                 </div>
 
@@ -1196,7 +1205,7 @@ class XMLRPC_IP_Whitelist {
                     <div class="xmlrpc-card-body" style="max-height: 300px; overflow-y: auto;">
                         <?php if ( ! empty( $log ) ) : ?>
                             <?php
-                            $log_reversed = array_reverse( array_slice( $log, -20 ) );
+                            $log_reversed = array_reverse( array_slice( $log, -8 ) );
                             foreach ( $log_reversed as $entry ) :
                                 $msg_class = '';
                                 if ( strpos( $entry['message'], 'ERROR' ) !== false ) {
